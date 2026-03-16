@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import TournamentCard from './TournamentCard'
-import { geocode, fetchTournaments, Tournament } from '@/lib/startgg'
+import { geocode, Tournament } from '@/lib/startgg'
 
 const TournamentMap = dynamic(() => import('./TournamentMap'), { ssr: false })
 
@@ -34,10 +34,20 @@ function Spinner() {
   )
 }
 
+async function searchTournaments(lat: number, lng: number, radius: number): Promise<Tournament[]> {
+  const res = await fetch('/api/tournaments', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ lat, lng, radius }),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error ?? 'Search failed')
+  return data.tournaments
+}
+
 export default function TournamentFinder() {
   const [location, setLocation] = useState('')
   const [radius, setRadius] = useState<number>(50)
-  const [apiKey, setApiKey] = useState('')
   const [view, setView] = useState<'list' | 'map'>('list')
   const [tournaments, setTournaments] = useState<Tournament[]>([])
   const [loading, setLoading] = useState(false)
@@ -45,25 +55,11 @@ export default function TournamentFinder() {
   const [searched, setSearched] = useState(false)
   const [searchCoords, setSearchCoords] = useState<{ lat: number; lng: number } | null>(null)
 
-  useEffect(() => {
-    const stored = localStorage.getItem('melee_startgg_key')
-    if (stored) setApiKey(stored)
-  }, [])
-
-  const saveApiKey = (val: string) => {
-    setApiKey(val)
-    localStorage.setItem('melee_startgg_key', val)
-  }
-
   const runSearch = async (lat: number, lng: number) => {
-    if (!apiKey.trim()) {
-      setError('Enter your start.gg API key above before searching')
-      return
-    }
     setLoading(true)
     setError(null)
     try {
-      const results = await fetchTournaments(lat, lng, radius, apiKey.trim())
+      const results = await searchTournaments(lat, lng, radius)
       setTournaments(results)
       setSearchCoords({ lat, lng })
       setSearched(true)
@@ -77,10 +73,6 @@ export default function TournamentFinder() {
   const handleSearch = async () => {
     if (!location.trim()) {
       setError('Enter a city, state, or zip code')
-      return
-    }
-    if (!apiKey.trim()) {
-      setError('Enter your start.gg API key above before searching')
       return
     }
     setLoading(true)
@@ -128,80 +120,52 @@ export default function TournamentFinder() {
         </div>
 
         {/* Controls */}
-        <div className="space-y-4 mb-8">
-          {/* API Key */}
-          <div>
-            <label className="block text-xs text-gray-400 mb-1.5 font-medium">
-              start.gg API Key
-              <span className="text-gray-600 font-normal ml-1">
-                — get one at{' '}
-                <a
-                  href="https://start.gg/admin/profile/developer"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 hover:underline"
-                >
-                  start.gg/admin/profile/developer
-                </a>
-              </span>
-            </label>
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-8">
+          {/* Location input */}
+          <div className="relative w-full sm:w-72">
             <input
-              type="password"
-              value={apiKey}
-              onChange={(e) => saveApiKey(e.target.value)}
-              placeholder="Paste your token here"
-              className="w-full max-w-sm bg-[#0d1221] border border-[#1e2a45] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-colors"
+              type="text"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="City, state, or zip"
+              className="w-full bg-[#0d1221] border border-[#1e2a45] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-colors pr-9"
             />
-          </div>
-
-          {/* Location + radius + search */}
-          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-            {/* Location input */}
-            <div className="relative w-full sm:w-72">
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="City, state, or zip"
-                className="w-full bg-[#0d1221] border border-[#1e2a45] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-colors pr-9"
-              />
-              <button
-                onClick={handleGeolocate}
-                title="Use my location"
-                disabled={loading}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-400 disabled:opacity-40 transition-colors"
-              >
-                <LocateIcon />
-              </button>
-            </div>
-
-            {/* Radius pills */}
-            <div className="flex gap-1.5">
-              {RADII.map((r) => (
-                <button
-                  key={r}
-                  onClick={() => setRadius(r)}
-                  className={`px-3 py-1.5 text-xs rounded-full border font-medium transition-colors ${
-                    radius === r
-                      ? 'bg-blue-500 border-blue-500 text-white'
-                      : 'border-[#1e2a45] text-gray-400 hover:border-blue-500 hover:text-white'
-                  }`}
-                >
-                  {r}mi
-                </button>
-              ))}
-            </div>
-
-            {/* Search button */}
             <button
-              onClick={handleSearch}
+              onClick={handleGeolocate}
+              title="Use my location"
               disabled={loading}
-              className="px-5 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-900 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors shrink-0"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-400 disabled:opacity-40 transition-colors"
             >
-              {loading ? 'Searching…' : 'Search'}
+              <LocateIcon />
             </button>
           </div>
+
+          {/* Radius pills */}
+          <div className="flex gap-1.5">
+            {RADII.map((r) => (
+              <button
+                key={r}
+                onClick={() => setRadius(r)}
+                className={`px-3 py-1.5 text-xs rounded-full border font-medium transition-colors ${
+                  radius === r
+                    ? 'bg-blue-500 border-blue-500 text-white'
+                    : 'border-[#1e2a45] text-gray-400 hover:border-blue-500 hover:text-white'
+                }`}
+              >
+                {r}mi
+              </button>
+            ))}
+          </div>
+
+          {/* Search button */}
+          <button
+            onClick={handleSearch}
+            disabled={loading}
+            className="px-5 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-900 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors shrink-0"
+          >
+            {loading ? 'Searching…' : 'Search'}
+          </button>
         </div>
 
         {/* Error */}
@@ -222,7 +186,6 @@ export default function TournamentFinder() {
         {/* Results */}
         {!loading && searched && (
           <>
-            {/* Results header */}
             <div className="flex items-center justify-between mb-5">
               <p className="text-sm text-gray-400">
                 {tournaments.length === 0
@@ -235,9 +198,7 @@ export default function TournamentFinder() {
                   <button
                     onClick={() => setView('list')}
                     className={`px-3 py-1.5 transition-colors ${
-                      view === 'list'
-                        ? 'bg-blue-500 text-white'
-                        : 'text-gray-400 hover:text-white'
+                      view === 'list' ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white'
                     }`}
                   >
                     List
@@ -245,9 +206,7 @@ export default function TournamentFinder() {
                   <button
                     onClick={() => setView('map')}
                     className={`px-3 py-1.5 transition-colors ${
-                      view === 'map'
-                        ? 'bg-blue-500 text-white'
-                        : 'text-gray-400 hover:text-white'
+                      view === 'map' ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white'
                     }`}
                   >
                     Map
@@ -256,7 +215,6 @@ export default function TournamentFinder() {
               )}
             </div>
 
-            {/* Empty state */}
             {tournaments.length === 0 && (
               <div className="text-center py-20 text-gray-600">
                 <p className="text-4xl mb-4 select-none">🎮</p>
@@ -265,7 +223,6 @@ export default function TournamentFinder() {
               </div>
             )}
 
-            {/* List view */}
             {tournaments.length > 0 && view === 'list' && (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {tournaments.map((t) => (
@@ -274,7 +231,6 @@ export default function TournamentFinder() {
               </div>
             )}
 
-            {/* Map view */}
             {tournaments.length > 0 && view === 'map' && searchCoords && (
               <div className="h-[560px] rounded-lg overflow-hidden border border-[#1e2a45]">
                 <TournamentMap tournaments={tournaments} center={searchCoords} />
