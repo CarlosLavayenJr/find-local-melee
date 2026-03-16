@@ -86,7 +86,7 @@ export default function TournamentFinder() {
             {tournaments.length > 0 && (
               <div className="flex flex-col lg:flex-row gap-6 items-start">
                 {/* Map — left on desktop, top on mobile */}
-                <div className="w-full lg:w-1/2 lg:sticky lg:top-6 h-[400px] lg:h-[calc(100vh-160px)] rounded-lg overflow-hidden border border-[#1e2a45] shrink-0">
+                <div className="w-full lg:w-1/2 lg:sticky lg:top-6 h-[400px] lg:h-[600px] rounded-lg overflow-hidden border border-[#1e2a45] shrink-0">
                   <TournamentMap tournaments={tournaments} center={ORLANDO} />
                 </div>
 
