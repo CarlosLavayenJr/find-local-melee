@@ -28,7 +28,6 @@ async function searchTournaments(): Promise<Tournament[]> {
 }
 
 export default function TournamentFinder() {
-  const [view, setView] = useState<'list' | 'map'>('list')
   const [tournaments, setTournaments] = useState<Tournament[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -42,7 +41,7 @@ export default function TournamentFinder() {
 
   return (
     <div className="min-h-screen bg-[#070d1a] text-white">
-      <div className="max-w-6xl mx-auto px-4 py-10">
+      <div className="max-w-7xl mx-auto px-4 py-10">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold tracking-tight mb-1">Find Local Melee</h1>
@@ -69,34 +68,11 @@ export default function TournamentFinder() {
         {/* Results */}
         {!loading && !error && (
           <>
-            <div className="flex items-center justify-between mb-5">
-              <p className="text-sm text-gray-400">
-                {tournaments.length === 0
-                  ? 'No tournaments found'
-                  : `${tournaments.length} tournament${tournaments.length !== 1 ? 's' : ''} found`}
-              </p>
-
-              {tournaments.length > 0 && (
-                <div className="flex border border-[#1e2a45] rounded-lg overflow-hidden text-xs">
-                  <button
-                    onClick={() => setView('list')}
-                    className={`px-3 py-1.5 transition-colors ${
-                      view === 'list' ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    List
-                  </button>
-                  <button
-                    onClick={() => setView('map')}
-                    className={`px-3 py-1.5 transition-colors ${
-                      view === 'map' ? 'bg-blue-500 text-white' : 'text-gray-400 hover:text-white'
-                    }`}
-                  >
-                    Map
-                  </button>
-                </div>
-              )}
-            </div>
+            <p className="text-sm text-gray-400 mb-5">
+              {tournaments.length === 0
+                ? 'No tournaments found'
+                : `${tournaments.length} tournament${tournaments.length !== 1 ? 's' : ''} found`}
+            </p>
 
             {tournaments.length === 0 && (
               <div className="text-center py-20 text-gray-600">
@@ -107,17 +83,19 @@ export default function TournamentFinder() {
               </div>
             )}
 
-            {tournaments.length > 0 && view === 'list' && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {tournaments.map((t) => (
-                  <TournamentCard key={t.id} tournament={t} />
-                ))}
-              </div>
-            )}
+            {tournaments.length > 0 && (
+              <div className="flex flex-col lg:flex-row gap-6 items-start">
+                {/* Map — left on desktop, top on mobile */}
+                <div className="w-full lg:w-1/2 lg:sticky lg:top-6 h-[400px] lg:h-[calc(100vh-160px)] rounded-lg overflow-hidden border border-[#1e2a45] shrink-0">
+                  <TournamentMap tournaments={tournaments} center={ORLANDO} />
+                </div>
 
-            {tournaments.length > 0 && view === 'map' && (
-              <div className="h-[560px] rounded-lg overflow-hidden border border-[#1e2a45]">
-                <TournamentMap tournaments={tournaments} center={ORLANDO} />
+                {/* Cards — right on desktop, bottom on mobile */}
+                <div className="w-full lg:w-1/2 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {tournaments.map((t) => (
+                    <TournamentCard key={t.id} tournament={t} />
+                  ))}
+                </div>
               </div>
             )}
           </>
