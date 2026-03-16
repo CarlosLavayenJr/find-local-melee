@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const tournaments = await fetchTournaments(lat, lng, radius, apiKey)
+    tournaments.sort((a, b) => a.startAt - b.startAt)
     return NextResponse.json({ tournaments })
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Search failed'
