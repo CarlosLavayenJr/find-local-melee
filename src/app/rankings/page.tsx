@@ -9,7 +9,7 @@ export default function Rankings() {
         <iframe
           src="https://braacket.com/league/7680C6CE-DBD3-4C13-AF3F-9903EA6B1AA9/ranking"
           width="100%"
-          height="700"
+          height="1000"
           frameBorder="0"
           allowFullScreen
         />
