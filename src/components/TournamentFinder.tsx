@@ -44,7 +44,7 @@ export default function TournamentFinder() {
       <div className="max-w-7xl mx-auto px-4 py-10">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight mb-1">Find Local Melee</h1>
+          <h1 className="text-3xl font-bold font-display tracking-tight mb-1">Find Local Melee</h1>
           <p className="text-gray-500 text-sm">
             Upcoming SSBM tournaments within 50 miles of Orlando, FL
           </p>
