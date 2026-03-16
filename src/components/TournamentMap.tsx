@@ -12,11 +12,29 @@ interface Props {
 
 const POPUP_STYLES = `
   .leaflet-popup-content-wrapper {
-    border-radius: 8px !important;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15) !important;
+    background: #141414 !important;
+    border: 1px solid #222222 !important;
+    color: white !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
+  }
+  .leaflet-popup-tip {
+    background: #141414 !important;
+  }
+  .leaflet-popup-close-button {
+    color: #7A7A7A !important;
+    font-size: 18px !important;
+    top: 8px !important;
+    right: 10px !important;
+  }
+  .leaflet-popup-close-button:hover {
+    color: #ffffff !important;
   }
   .leaflet-popup-content {
     margin: 14px 18px !important;
+  }
+  .leaflet-container {
+    background: #0B0B0B !important;
   }
 `
 
@@ -25,7 +43,6 @@ export default function TournamentMap({ tournaments, center }: Props) {
   const mapRef = useRef<L.Map | null>(null)
   const styleRef = useRef<HTMLStyleElement | null>(null)
 
-  // Initialize map once
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
 
@@ -35,7 +52,7 @@ export default function TournamentMap({ tournaments, center }: Props) {
     )
     mapRef.current = map
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
@@ -57,16 +74,12 @@ export default function TournamentMap({ tournaments, center }: Props) {
     }
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Update markers and pan when data changes
   useEffect(() => {
     const map = mapRef.current
     if (!map) return
 
-    // Remove all circle markers
     map.eachLayer((layer) => {
-      if (layer instanceof L.CircleMarker) {
-        map.removeLayer(layer)
-      }
+      if (layer instanceof L.CircleMarker) map.removeLayer(layer)
     })
 
     map.setView([center.lat, center.lng], 10, { animate: true })
@@ -76,30 +89,28 @@ export default function TournamentMap({ tournaments, center }: Props) {
 
       const loc = [t.city, t.addrState].filter(Boolean).join(', ')
 
-      const marker = L.circleMarker([t.lat, t.lng], {
+      L.circleMarker([t.lat, t.lng], {
         radius: 7,
-        fillColor: '#3b82f6',
-        color: '#93c5fd',
+        fillColor: '#00E56A',
+        color: '#00FF7A',
         weight: 2,
         opacity: 1,
         fillOpacity: 0.9,
       })
-
-      marker.bindPopup(
-        `<div style="min-width:170px;max-width:220px">
-          <a
-            href="https://start.gg/${t.slug}"
-            target="_blank"
-            rel="noopener noreferrer"
-            style="font-weight:600;font-size:13px;color:#2563eb;text-decoration:none;display:block;margin-bottom:5px;line-height:1.4"
-          >${t.name}</a>
-          ${loc ? `<div style="font-size:12px;color:#6b7280;margin-bottom:3px">${loc}</div>` : ''}
-          <div style="font-size:12px;color:#6b7280;margin-bottom:3px">${formatDate(t.startAt)}</div>
-          ${t.numAttendees ? `<div style="font-size:12px;color:#3b82f6">${t.numAttendees} entrants</div>` : ''}
-        </div>`,
-      )
-
-      marker.addTo(map)
+        .bindPopup(
+          `<div style="min-width:170px;max-width:220px">
+            <a
+              href="https://start.gg/${t.slug}"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="font-weight:600;font-size:13px;color:#00E56A;text-decoration:none;display:block;margin-bottom:5px;line-height:1.4"
+            >${t.name}</a>
+            ${loc ? `<div style="font-size:12px;color:#7A7A7A;margin-bottom:3px">${loc}</div>` : ''}
+            <div style="font-size:12px;color:#7A7A7A;margin-bottom:3px">${formatDate(t.startAt)}</div>
+            ${t.numAttendees ? `<div style="font-size:12px;color:#00E56A">${t.numAttendees} entrants</div>` : ''}
+          </div>`,
+        )
+        .addTo(map)
     })
   }, [tournaments, center])
 

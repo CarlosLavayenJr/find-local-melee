@@ -2,16 +2,32 @@ import Link from 'next/link'
 
 export default function Nav() {
   return (
-    <nav className="border-b border-gray-200 bg-white">
-      <div className="max-w-7xl mx-auto px-4 h-12 flex items-center gap-6">
-        <Link href="/" className="font-bold text-sm text-gray-900 tracking-tight">
+    <nav style={{ background: 'var(--bg-main)', borderBottom: '1px solid var(--border)' }}>
+      <div className="max-w-[1200px] mx-auto px-6 h-14 flex items-center gap-8">
+        <Link
+          href="/"
+          className="font-bold text-sm tracking-tight"
+          style={{ color: 'var(--accent)' }}
+        >
           CFL Melee
         </Link>
-        <div className="flex gap-4 text-sm">
-          <Link href="/" className="text-gray-500 hover:text-gray-900 transition-colors">
+        <div className="flex gap-6 text-sm">
+          <Link
+            href="/"
+            className="transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+          >
             Tournaments
           </Link>
-          <Link href="/rankings" className="text-gray-500 hover:text-gray-900 transition-colors">
+          <Link
+            href="/rankings"
+            className="transition-colors"
+            style={{ color: 'var(--text-secondary)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
+          >
             Power Rankings
           </Link>
         </div>

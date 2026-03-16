@@ -1,3 +1,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --bg-main: #0B0B0B;
+  --bg-card: #141414;
+  --accent: #00E56A;
+  --accent-hover: #00FF7A;
+  --text-primary: #FFFFFF;
+  --text-secondary: #B3B3B3;
+  --text-muted: #7A7A7A;
+  --border: #222222;
+}

@@ -12,16 +12,31 @@ export default function StreamsSection() {
   }, [])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 pb-16">
-      <div className="mb-6 pt-2">
-        <h2 className="text-2xl font-bold tracking-tight mb-1">Streams</h2>
-        <p className="text-gray-500 text-sm">Live and recent broadcasts</p>
+    <div className="max-w-[1200px] mx-auto px-6 pb-16">
+      <div className="mb-6">
+        <h2
+          className="text-2xl font-bold mb-1"
+          style={{ letterSpacing: '-0.02em', color: 'var(--text-primary)' }}
+        >
+          Streams
+        </h2>
+        <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+          Live and recent broadcasts
+        </p>
       </div>
 
       {hostname && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {CHANNELS.map((channel) => (
-            <div key={channel} className="rounded-lg overflow-hidden border border-gray-200">
+            <div
+              key={channel}
+              className="rounded-xl overflow-hidden"
+              style={{
+                background: 'var(--bg-card)',
+                border: '1px solid var(--border)',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
+              }}
+            >
               <div className="aspect-video">
                 <iframe
                   src={`https://player.twitch.tv/?channel=${channel}&parent=${hostname}&autoplay=false`}
@@ -30,12 +45,15 @@ export default function StreamsSection() {
                   allowFullScreen
                 />
               </div>
-              <div className="px-4 py-3 bg-white border-t border-gray-200">
+              <div className="px-4 py-3" style={{ borderTop: '1px solid var(--border)' }}>
                 <a
                   href={`https://twitch.tv/${channel}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm font-medium text-gray-900 hover:text-gray-500 transition-colors"
+                  className="text-sm font-medium transition-colors"
+                  style={{ color: 'var(--text-secondary)' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
                 >
                   {channel}
                 </a>
