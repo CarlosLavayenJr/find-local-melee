@@ -1,32 +1,14 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import dynamic from 'next/dynamic'
 import TournamentCard from './TournamentCard'
-import { geocode, Tournament } from '@/lib/startgg'
+import { Tournament } from '@/lib/startgg'
 
 const TournamentMap = dynamic(() => import('./TournamentMap'), { ssr: false })
 
-const RADII = [25, 50, 100, 200] as const
-
-function LocateIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-    </svg>
-  )
-}
+const ORLANDO = { lat: 28.5384, lng: -81.3789 }
+const RADIUS = 50
 
 function Spinner() {
   return (
@@ -34,11 +16,11 @@ function Spinner() {
   )
 }
 
-async function searchTournaments(lat: number, lng: number, radius: number): Promise<Tournament[]> {
+async function searchTournaments(): Promise<Tournament[]> {
   const res = await fetch('/api/tournaments', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ lat, lng, radius }),
+    body: JSON.stringify({ lat: ORLANDO.lat, lng: ORLANDO.lng, radius: RADIUS }),
   })
   const data = await res.json()
   if (!res.ok) throw new Error(data.error ?? 'Search failed')
@@ -46,69 +28,17 @@ async function searchTournaments(lat: number, lng: number, radius: number): Prom
 }
 
 export default function TournamentFinder() {
-  const [location, setLocation] = useState('')
-  const [radius, setRadius] = useState<number>(50)
   const [view, setView] = useState<'list' | 'map'>('list')
   const [tournaments, setTournaments] = useState<Tournament[]>([])
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [searched, setSearched] = useState(false)
-  const [searchCoords, setSearchCoords] = useState<{ lat: number; lng: number } | null>(null)
 
-  const runSearch = async (lat: number, lng: number) => {
-    setLoading(true)
-    setError(null)
-    try {
-      const results = await searchTournaments(lat, lng, radius)
-      setTournaments(results)
-      setSearchCoords({ lat, lng })
-      setSearched(true)
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Search failed')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleSearch = async () => {
-    if (!location.trim()) {
-      setError('Enter a city, state, or zip code')
-      return
-    }
-    setLoading(true)
-    setError(null)
-    try {
-      const coords = await geocode(location.trim())
-      await runSearch(coords.lat, coords.lng)
-    } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Search failed')
-      setLoading(false)
-    }
-  }
-
-  const handleGeolocate = () => {
-    if (!navigator.geolocation) {
-      setError('Geolocation is not supported by your browser')
-      return
-    }
-    setError(null)
-    setLoading(true)
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords
-        setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`)
-        await runSearch(latitude, longitude)
-      },
-      (err) => {
-        setError(`Geolocation failed: ${err.message}`)
-        setLoading(false)
-      },
-    )
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') handleSearch()
-  }
+  useEffect(() => {
+    searchTournaments()
+      .then(setTournaments)
+      .catch((e) => setError(e instanceof Error ? e.message : 'Search failed'))
+      .finally(() => setLoading(false))
+  }, [])
 
   return (
     <div className="min-h-screen bg-[#070d1a] text-white">
@@ -116,56 +46,9 @@ export default function TournamentFinder() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold tracking-tight mb-1">Find Local Melee</h1>
-          <p className="text-gray-500 text-sm">Upcoming SSBM tournaments near you, powered by start.gg</p>
-        </div>
-
-        {/* Controls */}
-        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center mb-8">
-          {/* Location input */}
-          <div className="relative w-full sm:w-72">
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="City, state, or zip"
-              className="w-full bg-[#0d1221] border border-[#1e2a45] rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500 transition-colors pr-9"
-            />
-            <button
-              onClick={handleGeolocate}
-              title="Use my location"
-              disabled={loading}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-500 hover:text-blue-400 disabled:opacity-40 transition-colors"
-            >
-              <LocateIcon />
-            </button>
-          </div>
-
-          {/* Radius pills */}
-          <div className="flex gap-1.5">
-            {RADII.map((r) => (
-              <button
-                key={r}
-                onClick={() => setRadius(r)}
-                className={`px-3 py-1.5 text-xs rounded-full border font-medium transition-colors ${
-                  radius === r
-                    ? 'bg-blue-500 border-blue-500 text-white'
-                    : 'border-[#1e2a45] text-gray-400 hover:border-blue-500 hover:text-white'
-                }`}
-              >
-                {r}mi
-              </button>
-            ))}
-          </div>
-
-          {/* Search button */}
-          <button
-            onClick={handleSearch}
-            disabled={loading}
-            className="px-5 py-2 bg-blue-500 hover:bg-blue-600 disabled:bg-blue-900 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors shrink-0"
-          >
-            {loading ? 'Searching…' : 'Search'}
-          </button>
+          <p className="text-gray-500 text-sm">
+            Upcoming SSBM tournaments within 50 miles of Orlando, FL
+          </p>
         </div>
 
         {/* Error */}
@@ -179,12 +62,12 @@ export default function TournamentFinder() {
         {loading && (
           <div className="flex flex-col items-center py-20 gap-3 text-gray-500">
             <Spinner />
-            <p className="text-sm">Searching tournaments…</p>
+            <p className="text-sm">Loading tournaments…</p>
           </div>
         )}
 
         {/* Results */}
-        {!loading && searched && (
+        {!loading && !error && (
           <>
             <div className="flex items-center justify-between mb-5">
               <p className="text-sm text-gray-400">
@@ -218,8 +101,9 @@ export default function TournamentFinder() {
             {tournaments.length === 0 && (
               <div className="text-center py-20 text-gray-600">
                 <p className="text-4xl mb-4 select-none">🎮</p>
-                <p className="text-sm font-medium text-gray-500">No upcoming Melee tournaments in this area</p>
-                <p className="text-xs mt-1">Try a wider radius or a different location</p>
+                <p className="text-sm font-medium text-gray-500">
+                  No upcoming Melee tournaments in the Orlando area
+                </p>
               </div>
             )}
 
@@ -231,9 +115,9 @@ export default function TournamentFinder() {
               </div>
             )}
 
-            {tournaments.length > 0 && view === 'map' && searchCoords && (
+            {tournaments.length > 0 && view === 'map' && (
               <div className="h-[560px] rounded-lg overflow-hidden border border-[#1e2a45]">
-                <TournamentMap tournaments={tournaments} center={searchCoords} />
+                <TournamentMap tournaments={tournaments} center={ORLANDO} />
               </div>
             )}
           </>
