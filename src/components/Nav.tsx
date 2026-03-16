@@ -14,9 +14,6 @@ export default function Nav() {
           <Link href="/rankings" className="text-gray-400 hover:text-white transition-colors">
             Power Rankings
           </Link>
-          <Link href="/streams" className="text-gray-400 hover:text-white transition-colors">
-            Streams
-          </Link>
         </div>
       </div>
     </nav>

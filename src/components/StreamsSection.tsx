@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 
 const CHANNELS = ['spiralmedia', 'hungrybox']
 
-export default function Streams() {
+export default function StreamsSection() {
   const [hostname, setHostname] = useState('')
 
   useEffect(() => {
@@ -12,10 +12,10 @@ export default function Streams() {
   }, [])
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold font-display tracking-tight mb-1">Streams</h1>
-        <p className="text-gray-500 text-sm">Live and recent broadcasts from Central Florida Melee</p>
+    <div className="max-w-7xl mx-auto px-4 pb-16">
+      <div className="mb-6">
+        <h2 className="text-3xl font-bold font-display tracking-tight mb-1">Streams</h2>
+        <p className="text-gray-500 text-sm">Live and recent broadcasts</p>
       </div>
 
       {hostname && (
