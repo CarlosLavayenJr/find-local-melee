@@ -12,29 +12,11 @@ interface Props {
 
 const POPUP_STYLES = `
   .leaflet-popup-content-wrapper {
-    background: #141414 !important;
-    border: 1px solid #222222 !important;
-    color: white !important;
     border-radius: 10px !important;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5) !important;
-  }
-  .leaflet-popup-tip {
-    background: #141414 !important;
-  }
-  .leaflet-popup-close-button {
-    color: #7A7A7A !important;
-    font-size: 18px !important;
-    top: 8px !important;
-    right: 10px !important;
-  }
-  .leaflet-popup-close-button:hover {
-    color: #ffffff !important;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
   }
   .leaflet-popup-content {
     margin: 14px 18px !important;
-  }
-  .leaflet-container {
-    background: #0B0B0B !important;
   }
 `
 
@@ -52,7 +34,7 @@ export default function TournamentMap({ tournaments, center }: Props) {
     )
     mapRef.current = map
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
       attribution:
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
       subdomains: 'abcd',
@@ -91,8 +73,8 @@ export default function TournamentMap({ tournaments, center }: Props) {
 
       L.circleMarker([t.lat, t.lng], {
         radius: 7,
-        fillColor: '#00E56A',
-        color: '#00FF7A',
+        fillColor: '#208e2c',
+        color: '#27a835',
         weight: 2,
         opacity: 1,
         fillOpacity: 0.9,
@@ -103,11 +85,11 @@ export default function TournamentMap({ tournaments, center }: Props) {
               href="https://start.gg/${t.slug}"
               target="_blank"
               rel="noopener noreferrer"
-              style="font-weight:600;font-size:13px;color:#00E56A;text-decoration:none;display:block;margin-bottom:5px;line-height:1.4"
+              style="font-weight:600;font-size:13px;color:#208e2c;text-decoration:none;display:block;margin-bottom:5px;line-height:1.4"
             >${t.name}</a>
-            ${loc ? `<div style="font-size:12px;color:#7A7A7A;margin-bottom:3px">${loc}</div>` : ''}
-            <div style="font-size:12px;color:#7A7A7A;margin-bottom:3px">${formatDate(t.startAt)}</div>
-            ${t.numAttendees ? `<div style="font-size:12px;color:#00E56A">${t.numAttendees} entrants</div>` : ''}
+            ${loc ? `<div style="font-size:12px;color:#6b7280;margin-bottom:3px">${loc}</div>` : ''}
+            <div style="font-size:12px;color:#6b7280;margin-bottom:3px">${formatDate(t.startAt)}</div>
+            ${t.numAttendees ? `<div style="font-size:12px;color:#208e2c">${t.numAttendees} entrants</div>` : ''}
           </div>`,
         )
         .addTo(map)
