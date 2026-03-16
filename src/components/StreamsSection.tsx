@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 
-const CHANNELS = ['spiralmedia', 'hungrybox']
+const CHANNELS = ['spiralmedia', 'polaritygg']
 
 export default function StreamsSection() {
   const [hostname, setHostname] = useState('')
